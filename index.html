@@ -33,10 +33,10 @@ body{font-family:"Nunito",sans-serif;background:var(--fond);color:var(--texte);m
 
 /* HEADER */
 header{background:linear-gradient(135deg,#2c3e50,#3498db);color:white;text-align:center;padding:12px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(52,152,219,.3)}
-.header-top{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px}
-.header-logo{width:52px;height:52px;object-fit:contain;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:white}
-.header-text h1{font-size:1.3rem;font-weight:900;text-align:left}
-.header-text p{font-size:.75rem;opacity:.7;text-align:left}
+.header-top{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;margin-bottom:6px}
+.header-logo{width:60px;height:60px;object-fit:contain;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:white}
+.header-text h1{font-size:1.3rem;font-weight:900;text-align:center}
+.header-text p{font-size:.75rem;opacity:.7;text-align:center}
 .poste-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:800;cursor:pointer;border:2px solid rgba(255,255,255,.3);margin-top:4px;margin-bottom:2px}
 .poste-badge:active{transform:scale(0.95)}
 .badge-bar{background:rgba(230,126,34,.35)}
@@ -214,6 +214,144 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
 .poste-change-btn{border:none;border-radius:16px;padding:20px 10px;font-family:"Nunito",sans-serif;font-size:.95rem;font-weight:900;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;color:white;box-shadow:var(--ombre)}
 .poste-change-btn:active{transform:scale(0.95)}
 
+
+/* ── PAGE AIDE ── */
+.aide-hero{background:linear-gradient(135deg,#2c3e50,#3498db);border-radius:var(--radius);padding:22px 20px;color:white;text-align:center;margin-bottom:16px;box-shadow:var(--ombre)}
+.aide-hero-icon{font-size:3rem;margin-bottom:8px}
+.aide-hero-title{font-size:1.3rem;font-weight:900;margin-bottom:4px}
+.aide-hero-sub{font-size:.85rem;opacity:.7}
+.aide-section{background:white;border-radius:var(--radius);box-shadow:var(--ombre);margin-bottom:14px;overflow:hidden}
+.aide-section-head{padding:14px 16px;font-weight:900;font-size:1rem;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none}
+.aide-section-head .aide-arrow{margin-left:auto;transition:transform .25s;font-size:.8rem;opacity:.5}
+.aide-section.open .aide-arrow{transform:rotate(180deg)}
+.aide-section-body{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.aide-section.open .aide-section-body{max-height:2000px}
+.aide-body-inner{padding:0 16px 16px}
+.aide-step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.aide-step-num{background:var(--bleu);color:white;border-radius:50%;width:28px;height:28px;min-width:28px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:.85rem;margin-top:1px}
+.aide-step-text{font-size:.9rem;line-height:1.5;color:var(--texte)}
+.aide-step-text strong{color:var(--texte);font-weight:800}
+.aide-tip{background:linear-gradient(135deg,#eaf4fe,#d6eaf8);border-left:4px solid var(--bleu);border-radius:0 12px 12px 0;padding:10px 14px;margin:10px 0;font-size:.88rem;line-height:1.5;color:var(--texte)}
+.aide-tip.orange{background:linear-gradient(135deg,#fef9e7,#fdebd0);border-color:var(--orange)}
+.aide-tip.vert{background:linear-gradient(135deg,#eafaf1,#d5f5e3);border-color:var(--vert)}
+.aide-tip.rouge{background:linear-gradient(135deg,#fdedec,#fadbd8);border-color:var(--rouge)}
+.aide-produit-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.88rem}
+.aide-produit-table th{background:#f0f4f8;padding:8px 10px;font-weight:800;text-align:left;font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:#7f8c8d;border-bottom:2px solid #ecf0f1}
+.aide-produit-table td{padding:9px 10px;border-bottom:1px solid #f0f4f8;vertical-align:middle}
+.aide-produit-table tr:last-child td{border-bottom:none}
+.aide-produit-table .p-amt{font-family:"Courier Prime",monospace;font-weight:700;color:var(--bleu);text-align:right}
+.aide-rendu-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
+.aide-rendu-card{border-radius:12px;padding:10px 8px;text-align:center;font-size:.82rem;font-weight:700}
+.aide-rendu-card .arc-icon{font-size:1.4rem;display:block;margin-bottom:4px}
+
+
+/* BOUTON AIDE FLOTTANT */
+.btn-aide-flottant {
+  position: absolute;
+  right: 12px;
+  top: 14px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  border: 2px solid rgba(255,255,255,0.4);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .2s;
+  z-index: 10;
+}
+.btn-aide-flottant:active { transform: translateY(-50%) scale(0.9); }
+/* header-top position handled by .header */
+
+/* MODAL AIDE (plein écran) */
+.modal-aide-ov {
+  position: fixed; inset: 0;
+  background: var(--fond);
+  z-index: 600;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+  overflow-y: auto;
+}
+.modal-aide-ov.open { opacity: 1; pointer-events: all; }
+.modal-aide-header {
+  background: linear-gradient(135deg,#2c3e50,#3498db);
+  color: white;
+  padding: 16px 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(0,0,0,.2);
+}
+.modal-aide-header h2 { font-size: 1.1rem; font-weight: 900; flex: 1; }
+.btn-fermer-aide {
+  background: rgba(255,255,255,.2);
+  border: none;
+  border-radius: 50%;
+  width: 34px; height: 34px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-aide-body { padding: 14px 12px; max-width: 480px; margin: 0 auto; width: 100%; }
+
+/* MODAL INSTALL */
+.modal-install-ov {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.7);
+  z-index: 700;
+  display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+}
+.modal-install-ov.open { opacity: 1; pointer-events: all; }
+.modal-install-box {
+  background: white;
+  border-radius: 24px 24px 0 0;
+  padding: 24px 20px 40px;
+  width: 100%; max-width: 480px;
+  transform: translateY(60px);
+  transition: transform .3s;
+}
+.modal-install-ov.open .modal-install-box { transform: translateY(0); }
+.install-title { font-size: 1.2rem; font-weight: 900; margin-bottom: 6px; color: var(--texte); text-align: center; }
+.install-sub   { font-size: .88rem; color: #7f8c8d; text-align: center; margin-bottom: 22px; }
+.install-step  { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
+.install-step-num {
+  min-width: 30px; height: 30px;
+  background: var(--bleu); color: white;
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: .9rem; margin-top: 2px;
+}
+.install-step-text { font-size: .92rem; line-height: 1.5; color: var(--texte); }
+.install-step-text strong { color: var(--texte); font-weight: 800; }
+.install-os-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.install-os-btn {
+  border: 2px solid var(--gris); border-radius: 12px; padding: 10px;
+  background: white; font-family: "Nunito",sans-serif; font-size: .9rem;
+  font-weight: 800; cursor: pointer; color: var(--texte); transition: all .15s;
+  text-align: center;
+}
+.install-os-btn.active { border-color: var(--bleu); background: #ebf5fb; color: var(--bleu); }
+.install-steps { display: none; }
+.install-steps.visible { display: block; }
+.btn-close-install {
+  width: 100%; background: linear-gradient(135deg,var(--bleu),var(--bleu2));
+  color: white; border: none; border-radius: var(--radius);
+  padding: 15px; font-family: "Nunito",sans-serif; font-size: 1rem;
+  font-weight: 800; cursor: pointer; margin-top: 8px;
+}
+.btn-close-install:active { transform: scale(0.97); }
+
 /* TOAST */
 .toast{position:fixed;top:78px;left:50%;transform:translateX(-50%) translateY(-20px);background:#2c3e50;color:white;padding:10px 20px;border-radius:25px;font-weight:700;font-size:.88rem;opacity:0;pointer-events:none;z-index:999;transition:all .3s;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
@@ -247,6 +385,7 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
       <p>Les Écoliers Verlaine</p>
     </div>
   </div>
+  <button class="btn-aide-flottant" onclick="ouvrirAide()" title="Aide">❓</button>
   <div id="poste-badge" class="poste-badge badge-bar" onclick="ouvrirModalPoste()">
     🍺 Bar — Appuyer pour changer
   </div>
@@ -338,6 +477,195 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
 
 </main>
 
+
+<!-- PAGE AIDE -->
+<div class="page" id="page-aide">
+
+  <div class="aide-hero">
+    <div class="aide-hero-icon">❓</div>
+    <div class="aide-hero-title">Guide d'utilisation</div>
+    <div class="aide-hero-sub">Appuyez sur une section pour l'ouvrir</div>
+  </div>
+
+  <!-- Section 1 : Démarrage -->
+  <div class="aide-section" id="as-1">
+    <div class="aide-section-head" onclick="toggleAide('as-1')" style="border-left:5px solid #3498db">
+      <span>🚀</span><span>Démarrage</span><span class="aide-arrow">▼</span>
+    </div>
+    <div class="aide-section-body">
+      <div class="aide-body-inner">
+        <div class="aide-step">
+          <div class="aide-step-num">1</div>
+          <div class="aide-step-text">Au premier lancement, choisissez votre poste : <strong>🍺 Bar</strong> ou <strong>🏠 Accueil</strong>. Ce choix est mémorisé.</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">2</div>
+          <div class="aide-step-text">Pour changer de poste en cours de journée, appuyez sur le <strong>badge coloré</strong> sous le logo en haut de l'écran.</div>
+        </div>
+        <div class="aide-tip orange">💡 Chaque poste a sa propre liste de produits. Les statistiques regroupent les deux postes.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2 : Faire une vente -->
+  <div class="aide-section" id="as-2">
+    <div class="aide-section-head" onclick="toggleAide('as-2')" style="border-left:5px solid #2ecc71">
+      <span>🧾</span><span>Faire une vente</span><span class="aide-arrow">▼</span>
+    </div>
+    <div class="aide-section-body">
+      <div class="aide-body-inner">
+        <div class="aide-step">
+          <div class="aide-step-num">1</div>
+          <div class="aide-step-text">Appuyez sur les <strong>boutons colorés</strong> pour ajouter des articles. Le total se met à jour automatiquement.</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">2</div>
+          <div class="aide-step-text">Pour les produits avec options (Bière, Champagne, Américain), une fenêtre s'ouvre pour choisir le type.</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">3</div>
+          <div class="aide-step-text">Pour <strong>l'Américain</strong> : choisissez d'abord <em>Adulte ou Enfant</em>, puis le type de viande.</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">4</div>
+          <div class="aide-step-text">Appuyez sur <strong>↩️ Annuler dernier</strong> pour retirer le dernier article, ou <strong>🗑️ Tout effacer</strong> pour repartir à zéro.</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">5</div>
+          <div class="aide-step-text">Appuyez sur <strong>✅ Valider &amp; enregistrer</strong> pour passer à l'encaissement.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3 : Encaissement -->
+  <div class="aide-section" id="as-3">
+    <div class="aide-section-head" onclick="toggleAide('as-3')" style="border-left:5px solid #f39c12">
+      <span>💳</span><span>Encaissement &amp; monnaie</span><span class="aide-arrow">▼</span>
+    </div>
+    <div class="aide-section-body">
+      <div class="aide-body-inner">
+        <div class="aide-step">
+          <div class="aide-step-num">1</div>
+          <div class="aide-step-text">Le <strong>total à payer</strong> s'affiche en grand en vert.</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">2</div>
+          <div class="aide-step-text">Appuyez sur un <strong>bouton rapide</strong> (5€, 10€, 20€…) ou tapez le montant donné par le client.</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">3</div>
+          <div class="aide-step-text">La <strong>monnaie à rendre</strong> se calcule automatiquement.</div>
+        </div>
+        <div class="aide-rendu-grid">
+          <div class="aide-rendu-card" style="background:#d5f5e3;color:#1e8449">
+            <span class="arc-icon">🟢</span>Monnaie à rendre
+          </div>
+          <div class="aide-rendu-card" style="background:#d6eaf8;color:#2980b9">
+            <span class="arc-icon">🔵</span>Compte exact !
+          </div>
+          <div class="aide-rendu-card" style="background:#fadbd8;color:#c0392b">
+            <span class="arc-icon">🔴</span>Pas assez
+          </div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">4</div>
+          <div class="aide-step-text">Appuyez sur <strong>✅ Valider la vente</strong> pour enregistrer. La vente s'ajoute à l'historique et aux stats.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4 : Produits Bar -->
+  <div class="aide-section" id="as-4">
+    <div class="aide-section-head" onclick="toggleAide('as-4')" style="border-left:5px solid #e67e22">
+      <span>🍺</span><span>Produits — Bar</span><span class="aide-arrow">▼</span>
+    </div>
+    <div class="aide-section-body">
+      <div class="aide-body-inner">
+        <table class="aide-produit-table">
+          <thead><tr><th>Produit</th><th style="text-align:right">Prix</th></tr></thead>
+          <tbody>
+            <tr><td>🍋 Limonade</td><td class="p-amt">1,00 €</td></tr>
+            <tr><td>🥤 Soft</td><td class="p-amt">2,00 €</td></tr>
+            <tr><td>🍾 Champagne — Bouteille</td><td class="p-amt">23,00 €</td></tr>
+            <tr><td>🍾 Champagne — Bilda</td><td class="p-amt">3,00 €</td></tr>
+            <tr><td>🍺 Bière Blonde</td><td class="p-amt">2,50 €</td></tr>
+            <tr><td>🍺 Bière Blanche</td><td class="p-amt">2,50 €</td></tr>
+            <tr><td>🍺 Bière Rouge</td><td class="p-amt">3,00 €</td></tr>
+            <tr><td>☕ Café</td><td class="p-amt">1,00 €</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5 : Produits Accueil -->
+  <div class="aide-section" id="as-5">
+    <div class="aide-section-head" onclick="toggleAide('as-5')" style="border-left:5px solid #2ecc71">
+      <span>🏠</span><span>Produits — Accueil</span><span class="aide-arrow">▼</span>
+    </div>
+    <div class="aide-section-body">
+      <div class="aide-body-inner">
+        <table class="aide-produit-table">
+          <thead><tr><th>Produit</th><th style="text-align:right">Prix</th></tr></thead>
+          <tbody>
+            <tr><td>📋 Passeport</td><td class="p-amt">7,00 €</td></tr>
+            <tr><td>🥪 Américain Adulte</td><td class="p-amt">7,50 €</td></tr>
+            <tr><td>🥪 Américain Enfant</td><td class="p-amt">5,50 €</td></tr>
+            <tr><td colspan="2" style="color:#7f8c8d;font-size:.82rem;padding-left:20px">↳ Saucisse blanche, normale ou merguez</td></tr>
+            <tr><td>🍟 Frite</td><td class="p-amt">3,00 €</td></tr>
+            <tr><td>🥪 Croque-monsieur</td><td class="p-amt">1,50 €</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 6 : Stats & Historique -->
+  <div class="aide-section" id="as-6">
+    <div class="aide-section-head" onclick="toggleAide('as-6')" style="border-left:5px solid #9b59b6">
+      <span>📊</span><span>Stats &amp; Historique</span><span class="aide-arrow">▼</span>
+    </div>
+    <div class="aide-section-body">
+      <div class="aide-body-inner">
+        <div class="aide-tip vert">📊 L'onglet <strong>Stats</strong> affiche le total cumulé, les ventes par poste et le classement des produits. Il se met à jour après chaque vente.</div>
+        <div class="aide-tip">📋 L'onglet <strong>Historique</strong> liste toutes les ventes par jour avec l'heure, le poste et le montant.</div>
+        <div class="aide-tip rouge">⚠️ Le bouton <strong>"Remettre à zéro"</strong> efface les stats ET l'historique. Cette action est irréversible !</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 7 : Ajouter un produit -->
+  <div class="aide-section" id="as-7">
+    <div class="aide-section-head" onclick="toggleAide('as-7')" style="border-left:5px solid #3498db">
+      <span>➕</span><span>Ajouter un produit</span><span class="aide-arrow">▼</span>
+    </div>
+    <div class="aide-section-body">
+      <div class="aide-body-inner">
+        <div class="aide-step">
+          <div class="aide-step-num">1</div>
+          <div class="aide-step-text">Allez dans l'onglet <strong>➕ Produits</strong></div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">2</div>
+          <div class="aide-step-text">Entrez le <strong>nom</strong> et le <strong>prix</strong> du produit</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">3</div>
+          <div class="aide-step-text">Choisissez un <strong>emoji</strong> et une <strong>couleur</strong> pour le bouton</div>
+        </div>
+        <div class="aide-step">
+          <div class="aide-step-num">4</div>
+          <div class="aide-step-text">Appuyez sur <strong>➕ Ajouter à la caisse</strong></div>
+        </div>
+        <div class="aide-tip orange">💡 Les produits par défaut ne peuvent pas être supprimés. Seuls vos ajouts peuvent être effacés via 🗑️.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <!-- MODAL CONFIRMATION -->
 <div class="modal-ov" id="modal-confirm">
   <div class="modal-box">
@@ -401,6 +729,79 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
       </button>
     </div>
     <button class="m-btn m-cancel" style="width:100%;margin-top:12px" onclick="fermerModalPoste()">❌ Annuler</button>
+  </div>
+</div>
+
+
+<!-- MODALE AIDE PLEIN ÉCRAN -->
+<div class="modal-aide-ov" id="modal-aide">
+  <div class="modal-aide-header">
+    <span style="font-size:1.4rem">❓</span>
+    <h2>Guide d'utilisation</h2>
+    <button class="btn-fermer-aide" onclick="fermerAide()">✕</button>
+  </div>
+  <div class="modal-aide-body" id="modal-aide-body">
+    <!-- Contenu injecté dynamiquement selon le poste -->
+  </div>
+</div>
+
+<!-- MODALE INSTALLATION ÉCRAN D'ACCUEIL -->
+<div class="modal-install-ov" id="modal-install">
+  <div class="modal-install-box">
+    <div style="text-align:center;font-size:2.5rem;margin-bottom:10px">📱</div>
+    <div class="install-title">Ajouter à l'écran d'accueil</div>
+    <div class="install-sub">Installez l'application pour y accéder en un clic, comme une vraie app !</div>
+    <div class="install-os-tabs">
+      <button class="install-os-btn active" id="btn-android" onclick="showOS('android')">🤖 Android</button>
+      <button class="install-os-btn"        id="btn-ios"     onclick="showOS('ios')">🍎 iPhone</button>
+    </div>
+    <!-- Android -->
+    <div class="install-steps visible" id="steps-android">
+      <div class="install-step">
+        <div class="install-step-num">1</div>
+        <div class="install-step-text">Ouvrez cette page dans <strong>Chrome</strong> sur votre Samsung</div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">2</div>
+        <div class="install-step-text">Appuyez sur le menu <strong>⋮</strong> en haut à droite de Chrome</div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">3</div>
+        <div class="install-step-text">Sélectionnez <strong>"Ajouter à l'écran d'accueil"</strong></div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">4</div>
+        <div class="install-step-text">Appuyez sur <strong>"Ajouter"</strong> pour confirmer</div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">5</div>
+        <div class="install-step-text">L'icône <strong>Ma Caisse</strong> apparaît sur votre écran d'accueil 🎉</div>
+      </div>
+    </div>
+    <!-- iPhone -->
+    <div class="install-steps" id="steps-ios">
+      <div class="install-step">
+        <div class="install-step-num">1</div>
+        <div class="install-step-text">Ouvrez cette page dans <strong>Safari</strong> sur votre iPhone</div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">2</div>
+        <div class="install-step-text">Appuyez sur le bouton <strong>Partager</strong> (carré avec flèche ↑) en bas de l'écran</div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">3</div>
+        <div class="install-step-text">Faites défiler et appuyez sur <strong>"Sur l'écran d'accueil"</strong></div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">4</div>
+        <div class="install-step-text">Appuyez sur <strong>"Ajouter"</strong> en haut à droite</div>
+      </div>
+      <div class="install-step">
+        <div class="install-step-num">5</div>
+        <div class="install-step-text">L'icône <strong>Ma Caisse</strong> apparaît sur votre écran d'accueil 🎉</div>
+      </div>
+    </div>
+    <button class="btn-close-install" onclick="fermerInstall()">✅ C'est compris, merci !</button>
   </div>
 </div>
 
@@ -505,6 +906,7 @@ function showPage(id) {
   });
   if (id === "historique") renderHistorique();
   if (id === "stats")      renderStats();
+  if (id === "aide")       { ouvrirAide(); return; }
   if (id === "produits")   { buildFormProduits(); renderManage(); }
 }
 
@@ -520,6 +922,7 @@ function choisirPoste(p) {
   renderTicket();
   showPage("caisse");
   toast(p === "bar" ? "🍺 Poste Bar activé !" : "🏠 Poste Accueil activé !");
+  if (!localStorage.getItem("caisse_install_shown")) { setTimeout(ouvrirInstall, 800); }
 }
 function ouvrirModalPoste() { document.getElementById("modal-poste").classList.add("open"); }
 function fermerModalPoste() { document.getElementById("modal-poste").classList.remove("open"); }
@@ -1009,9 +1412,130 @@ function demanderEffacerHistorique() {
   });
 }
 
+
+// ── Aide : accordéon ──
+function toggleAide(id) {
+  var el = document.getElementById(id);
+  el.classList.toggle("open");
+}
+
+
+// ── Aide ──
+function ouvrirAide() {
+  var body = document.getElementById("modal-aide-body");
+  // Contenu selon le poste actif
+  var prodBar = [
+    { nom:"Limonade", prix:"1,00 €" },
+    { nom:"Soft", prix:"2,00 €" },
+    { nom:"Champagne — Bouteille", prix:"23,00 €" },
+    { nom:"Champagne — Bilda", prix:"3,00 €" },
+    { nom:"Bière Blonde", prix:"2,50 €" },
+    { nom:"Bière Blanche", prix:"2,50 €" },
+    { nom:"Bière Rouge", prix:"3,00 €" },
+    { nom:"Café", prix:"1,00 €" },
+  ];
+  var prodAcc = [
+    { nom:"Passeport", prix:"7,00 €" },
+    { nom:"Américain Adulte", prix:"7,50 €" },
+    { nom:"Américain Enfant", prix:"5,50 €" },
+    { nom:"Frite", prix:"3,00 €" },
+    { nom:"Croque-monsieur", prix:"1,50 €" },
+  ];
+  var prods = (poste === "bar") ? prodBar : prodAcc;
+  var posteLabel = (poste === "bar") ? "🍺 Bar" : "🏠 Accueil";
+  var rows = prods.map(function(p) {
+    return "<tr><td style='padding:9px 10px;border-bottom:1px solid #f0f4f8;font-size:.9rem'>" + p.nom + "</td>" +
+           "<td style='padding:9px 10px;border-bottom:1px solid #f0f4f8;font-family:Courier Prime,monospace;font-weight:700;color:var(--bleu);text-align:right'>" + p.prix + "</td></tr>";
+  }).join("");
+
+  body.innerHTML =
+    // Section 1 : Démarrage
+    makeSection("as1", "🚀", "Démarrage", "badge-bleu",
+      "<div class='aide-step'><div class='aide-step-num'>1</div><div class='aide-step-text'>Choisissez votre poste au premier lancement : <strong>🍺 Bar</strong> ou <strong>🏠 Accueil</strong>. Ce choix est mémorisé.</div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>2</div><div class='aide-step-text'>Pour changer de poste, appuyez sur le <strong>badge coloré</strong> sous le logo en haut de l'écran.</div></div>" +
+      "<div class='aide-tip orange'>💡 Chaque poste a sa propre liste de produits.</div>"
+    ) +
+    // Section 2 : Faire une vente
+    makeSection("as2", "🧾", "Faire une vente", "badge-vert",
+      "<div class='aide-step'><div class='aide-step-num'>1</div><div class='aide-step-text'>Appuyez sur les <strong>boutons colorés</strong> pour ajouter des articles.</div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>2</div><div class='aide-step-text'>Pour les produits avec options (Bière, Champagne, Américain), une fenêtre s'ouvre. Pour l'Américain : choisir <em>Adulte ou Enfant</em>, puis la viande.</div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>3</div><div class='aide-step-text'><strong>↩️ Annuler dernier</strong> retire le dernier article. <strong>🗑️ Tout effacer</strong> vide le ticket.</div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>4</div><div class='aide-step-text'>Appuyez sur <strong>✅ Valider & enregistrer</strong> pour encaisser.</div></div>"
+    ) +
+    // Section 3 : Encaissement
+    makeSection("as3", "💳", "Encaissement & monnaie", "badge-orange",
+      "<div class='aide-step'><div class='aide-step-num'>1</div><div class='aide-step-text'>Le <strong>total à payer</strong> s'affiche en vert.</div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>2</div><div class='aide-step-text'>Appuyez sur un <strong>bouton rapide</strong> (5€, 10€…) ou tapez le montant donné par le client.</div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>3</div><div class='aide-step-text'><span style='display:inline-block;background:#d5f5e3;padding:2px 8px;border-radius:8px;color:#1e8449;font-weight:700'>🟢 Vert</span> = monnaie à rendre &nbsp; <span style='display:inline-block;background:#d6eaf8;padding:2px 8px;border-radius:8px;color:#2980b9;font-weight:700'>🔵 Bleu</span> = compte exact &nbsp; <span style='display:inline-block;background:#fadbd8;padding:2px 8px;border-radius:8px;color:#c0392b;font-weight:700'>🔴 Rouge</span> = pas assez</div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>4</div><div class='aide-step-text'>Appuyez sur <strong>✅ Valider la vente</strong> pour enregistrer.</div></div>"
+    ) +
+    // Section 4 : Produits du poste actif
+    makeSection("as4", poste === "bar" ? "🍺" : "🏠", "Produits — " + posteLabel, "badge-poste",
+      "<table style='width:100%;border-collapse:collapse'>" +
+      "<thead><tr><th style='background:#f0f4f8;padding:8px 10px;text-align:left;font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:#7f8c8d;border-bottom:2px solid #ecf0f1'>Produit</th>" +
+      "<th style='background:#f0f4f8;padding:8px 10px;text-align:right;font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:#7f8c8d;border-bottom:2px solid #ecf0f1'>Prix</th></tr></thead>" +
+      "<tbody>" + rows + "</tbody></table>"
+    ) +
+    // Section 5 : Stats & Historique
+    makeSection("as5", "📊", "Stats & Historique", "badge-violet",
+      "<div class='aide-tip vert'>📊 L'onglet <strong>Stats</strong> affiche le total cumulé et le classement des produits. Il se met à jour après chaque vente.</div>" +
+      "<div class='aide-tip'>📋 L'onglet <strong>Historique</strong> liste toutes les ventes par jour.</div>" +
+      "<div class='aide-tip rouge'>⚠️ Remettre à zéro efface les stats ET l'historique. Irréversible !</div>"
+    ) +
+    // Section 6 : Ajouter un produit
+    makeSection("as6", "➕", "Ajouter un produit", "badge-bleu",
+      "<div class='aide-step'><div class='aide-step-num'>1</div><div class='aide-step-text'>Allez dans l'onglet <strong>➕ Produits</strong></div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>2</div><div class='aide-step-text'>Entrez le <strong>nom</strong>, le <strong>prix</strong>, un <strong>emoji</strong> et une <strong>couleur</strong></div></div>" +
+      "<div class='aide-step'><div class='aide-step-num'>3</div><div class='aide-step-text'>Appuyez sur <strong>➕ Ajouter à la caisse</strong></div></div>" +
+      "<div class='aide-tip orange'>💡 Les produits par défaut ne peuvent pas être supprimés.</div>"
+    );
+
+  // Ouvrir toutes les sections
+  document.querySelectorAll(".aide-section").forEach(function(s) { s.classList.remove("open"); });
+  document.getElementById("modal-aide").classList.add("open");
+}
+
+function makeSection(id, emoji, titre, badgeClass, contenu) {
+  var colors = { "badge-bleu":"var(--bleu)", "badge-vert":"var(--vert2)", "badge-orange":"var(--orange)", "badge-violet":"var(--violet)", "badge-poste": (poste === "bar" ? "#e67e22" : "#27ae60") };
+  var color = colors[badgeClass] || "var(--bleu)";
+  return "<div class='aide-section' id='" + id + "'>" +
+    "<div class='aide-section-head' onclick='toggleAide("+id+")' style='border-left:5px solid " + color + "'>" +
+    "<span>" + emoji + "</span><span style='flex:1'>" + titre + "</span><span class='aide-arrow'>▼</span></div>" +
+    "<div class='aide-section-body'><div class='aide-body-inner'>" + contenu + "</div></div></div>";
+}
+
+function fermerAide() {
+  document.getElementById("modal-aide").classList.remove("open");
+}
+
+function toggleAide(id) {
+  var el = document.getElementById(id);
+  el.classList.toggle("open");
+}
+
+// ── Installation écran d'accueil ──
+function ouvrirInstall() {
+  document.getElementById("modal-install").classList.add("open");
+}
+function fermerInstall() {
+  localStorage.setItem("caisse_install_shown", "1");
+  document.getElementById("modal-install").classList.remove("open");
+}
+document.getElementById("modal-install").addEventListener("click", function(e) {
+  if (e.target === this) fermerInstall();
+});
+function showOS(os) {
+  document.getElementById("steps-android").classList.toggle("visible", os === "android");
+  document.getElementById("steps-ios").classList.toggle("visible", os === "ios");
+  document.getElementById("btn-android").classList.toggle("active", os === "android");
+  document.getElementById("btn-ios").classList.toggle("active", os === "ios");
+}
+
+
 // ── INIT ──
 if (poste) {
   document.getElementById("poste-overlay").classList.add("hidden");
+  if (!localStorage.getItem("caisse_install_shown")) { setTimeout(ouvrirInstall, 1000); }
   majBadge();
   renderGrille();
   renderManage();
