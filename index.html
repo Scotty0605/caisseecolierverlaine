@@ -1037,7 +1037,8 @@ function renderGrille() {
 
     var prixLabel = p.prix !== null ? fmt(p.prix) : "Choisir ▾";
     var stockBadge = stockTotal !== null
-      ? "<span class='stock-badge" + (epuise ? " stock-zero" : (stockTotal <= 5 ? " stock-low" : "")) + "'>" +
+      ? "<span class='stock-badge" +
+        (epuise ? " stock-zero" : stockTotal <= 5 ? " stock-low" : " stock-ok") + "'>" +
         (epuise ? "⛔ Épuisé" : "📦 " + stockTotal) + "</span>"
       : "";
 
@@ -1169,6 +1170,19 @@ document.getElementById("modal-sc").addEventListener("click", function(e) { if (
 
 // ── Panier ──
 function ajouterAuPanier(nom, emoji, prix, stockKey) {
+  // ── Vérifier le stock disponible ──
+  if (stockKey) {
+    var dispo = typeof stock[stockKey] === "number" ? stock[stockKey] : null;
+    if (dispo !== null) {
+      var dejaDansPanier = panier.reduce(function(s, x) {
+        return s + (x.stockKey === stockKey ? x.qte : 0);
+      }, 0);
+      if (dejaDansPanier >= dispo) {
+        toast("⛔ Stock insuffisant — il n'en reste que " + dispo + " !");
+        return;
+      }
+    }
+  }
   var ex = panier.find(function(x) { return x.nom === nom; });
   if (ex) { ex.qte++; } else { panier.push({ nom: nom, emoji: emoji, prix: prix, qte: 1, stockKey: stockKey || null }); }
   renderTicket();
@@ -1639,8 +1653,16 @@ function showOS(os) {
 // ── Modifier quantité depuis le ticket ──
 function changerQte(index, delta) {
   if (index < 0 || index >= panier.length) return;
-  panier[index].qte += delta;
-  if (panier[index].qte <= 0) {
+  var item = panier[index];
+  if (delta > 0 && item.stockKey) {
+    var dispo = typeof stock[item.stockKey] === "number" ? stock[item.stockKey] : null;
+    if (dispo !== null && item.qte >= dispo) {
+      toast("⛔ Stock insuffisant — il n'en reste que " + dispo + " !");
+      return;
+    }
+  }
+  item.qte += delta;
+  if (item.qte <= 0) {
     panier.splice(index, 1);
   }
   renderTicket();
@@ -1677,6 +1699,7 @@ function changerQte(index, delta) {
   s.textContent =
     ".stock-badge{display:inline-block;font-size:.68rem;font-weight:800;padding:2px 7px;border-radius:20px;margin:2px 0;background:rgba(255,255,255,.25);color:white;letter-spacing:.3px}" +
     ".stock-zero{background:#c0392b!important;animation:pulse-red 1.5s infinite}" +
+    ".stock-ok{background:rgba(46,204,113,.35)!important;color:#fff}" +
     ".stock-low{background:#e67e22!important}" +
     ".produit-epuise{opacity:.5;filter:grayscale(.8);cursor:not-allowed!important}" +
     "@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.6}}" +
