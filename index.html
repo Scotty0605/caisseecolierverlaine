@@ -891,7 +891,13 @@ var CATS   = [
 
 // ── Firebase ──
 var firebaseConfig = {
-  databaseURL: "https://ecolierverlaine-default-rtdb.europe-west1.firebasedatabase.app/"
+  apiKey:            "AIzaSyC_koBZS_e064M2ugJrR56D6UH3FFp70MU",
+  authDomain:        "ecolierverlaine.firebaseapp.com",
+  databaseURL:       "https://ecolierverlaine-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:         "ecolierverlaine",
+  storageBucket:     "ecolierverlaine.firebasestorage.app",
+  messagingSenderId: "244752087629",
+  appId:             "1:244752087629:web:de5b5bdf8f4abd09d87a04"
 };
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
@@ -1674,7 +1680,6 @@ function changerQte(index, delta) {
     ".stock-low{background:#e67e22!important}" +
     ".produit-epuise{opacity:.5;filter:grayscale(.8);cursor:not-allowed!important}" +
     "@keyframes pulse-red{0%,100%{opacity:1}50%{opacity:.6}}" +
-    /* ── Onglet Stock ── */
     ".stock-row{display:flex;align-items:center;gap:12px;background:white;border-radius:14px;padding:12px 14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,.06)}" +
     ".stock-row-info{flex:1}" +
     ".stock-row-nom{font-weight:800;font-size:.92rem;color:var(--texte)}" +
@@ -1727,30 +1732,53 @@ function renderStock() {
   if (!cont) return;
   var prods = getAllProduitsStock();
   if (!prods.length) { cont.innerHTML = "<div class='empty-box'>Aucun produit</div>"; return; }
-  var html = "";
+  cont.innerHTML = "";
   var lastPoste = "";
   prods.forEach(function(p) {
     if (p._poste !== lastPoste) {
       lastPoste = p._poste;
-      html += "<div class='stock-section-title'>" + (p._poste === "bar" ? "🍺 Bar" : "🏠 Accueil") + "</div>";
+      var titre = document.createElement("div");
+      titre.className = "stock-section-title";
+      titre.textContent = p._poste === "bar" ? "🍺 Bar" : "🏠 Accueil";
+      cont.appendChild(titre);
     }
-    var qty = typeof stock[p._key] === "number" ? stock[p._key] : "—";
-    var isNum = typeof qty === "number";
-    html += "<div class='stock-row'>" +
+    var qty = typeof stock[p._key] === "number" ? stock[p._key] : "∞";
+    var isEpuise = typeof stock[p._key] === "number" && stock[p._key] === 0;
+    var isLow    = typeof stock[p._key] === "number" && stock[p._key] > 0 && stock[p._key] <= 5;
+
+    var row = document.createElement("div");
+    row.className = "stock-row";
+
+    var numStyle = isEpuise ? "color:#c0392b;font-weight:900"
+                 : isLow   ? "color:#e67e22;font-weight:900"
+                 : "color:var(--texte)";
+
+    row.innerHTML =
       "<span style='font-size:1.4rem'>" + p.emoji + "</span>" +
       "<div class='stock-row-info'>" +
         "<div class='stock-row-nom'>" + p.nom + "</div>" +
         "<div class='stock-row-sub'>" + (p._poste === "bar" ? "🍺 Bar" : "🏠 Accueil") + "</div>" +
       "</div>" +
       "<div class='stock-ctrl'>" +
-        "<button class='stock-btn stock-btn-m' onclick='modifStock("" + p._key + "",-1)'>−</button>" +
-        "<span class='stock-num' id='sn-" + p._key + "'>" + (isNum ? qty : "∞") + "</span>" +
-        "<button class='stock-btn stock-btn-p' onclick='modifStock("" + p._key + "",+1)'>+</button>" +
-        "<button class='stock-btn' style='background:#eaf2ff;color:var(--bleu);font-size:.7rem;width:auto;padding:0 8px;border-radius:10px;font-weight:800' onclick='setStock("" + p._key + "")'>Saisir</button>" +
-      "</div>" +
-    "</div>";
+        "<button class='stock-btn stock-btn-m' data-key='" + p._key + "' data-delta='-1'>−</button>" +
+        "<span class='stock-num' style='" + numStyle + "'>" + qty + "</span>" +
+        "<button class='stock-btn stock-btn-p' data-key='" + p._key + "' data-delta='1'>+</button>" +
+        "<button class='stock-btn stock-btn-set' style='background:#eaf2ff;color:var(--bleu);font-size:.7rem;width:auto;padding:0 8px;border-radius:10px;font-weight:800' data-key='" + p._key + "'>Saisir</button>" +
+      "</div>";
+
+    row.querySelectorAll("[data-key]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var key = this.getAttribute("data-key");
+        if (this.classList.contains("stock-btn-set")) {
+          setStock(key);
+        } else {
+          modifStock(key, parseInt(this.getAttribute("data-delta")));
+        }
+      });
+    });
+
+    cont.appendChild(row);
   });
-  cont.innerHTML = html;
 }
 
 function getAllProduitsStock() {
