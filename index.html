@@ -1831,7 +1831,7 @@ function initFirebaseListeners() {
 
   // 3. Stock désactivé
   db.ref("stock_disabled").on("value", function(snap) {
-    stockDisabled = snap.val() || {};
+    stockDesactive = snap.val() || {};
     renderGrille();
     if (document.getElementById("page-stock").classList.contains("active")) renderStock();
   });
