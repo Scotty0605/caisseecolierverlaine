@@ -1985,11 +1985,21 @@ function toggleStockDisabled(key) {
 }
 
 function setStock(key) {
-  var val = prompt("Nouveau stock pour ce produit :");
-  var n = parseInt(val);
-  if (isNaN(n) || n < 0) { toast("⚠️ Valeur invalide"); return; }
+  var val = prompt("Nouveau stock (entrez ∞ ou 'inf' pour désactiver le stock) :");
+  if (val === null) return;
+  var trimmed = val.trim();
+  if (trimmed === "∞" || trimmed.toLowerCase() === "inf") {
+    db.ref("stock_disabled/" + key).set(true);
+    db.ref("stock/" + key).remove();
+    toast("♾️ Stock désactivé (∞)");
+    return;
+  }
+  var n = parseInt(trimmed);
+  if (isNaN(n) || n < 0) { toast("⚠️ Valeur invalide — tapez un nombre ou ∞"); return; }
+  // Si on saisit un nombre, réactiver le stock si il était désactivé
+  db.ref("stock_disabled/" + key).remove();
   db.ref("stock/" + key).set(n);
-  toast("✅ Stock mis à jour");
+  toast("✅ Stock mis à jour : " + n);
 }
 
 // ── INIT ──
