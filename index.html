@@ -2511,20 +2511,51 @@ function validerNomJournee() {
     setTimeout(function() { document.getElementById("input-nom-journee").style.borderColor = ""; }, 1500);
     return;
   }
-  fermerModalNom();
-  if (!_archivePendingData) return;
-  _archivePendingData.nom  = nom;
-  _archivePendingData.date = new Date().toLocaleDateString("fr-FR");
-  _archivePendingData.ts   = Date.now();
 
-  db.ref("archives").push(_archivePendingData).then(function() {
-    db.ref("historique").remove();
-    toast("✅ Journée \"" + nom + "\" archivée !");
-    showPage("archives");
-  }).catch(function(e) {
-    toast("❌ Erreur Firebase : " + e.message);
-  });
+  // Fermer la modale SANS effacer les données
+  document.getElementById("modal-nom-journee").classList.remove("open");
+
+  if (!_archivePendingData) {
+    toast("❌ Erreur : données perdues, recommencez");
+    return;
+  }
+
+  // Construire l'objet final proprement
+  var archive = {
+    nom:          nom,
+    date:         new Date().toLocaleDateString("fr-FR"),
+    ts:           Date.now(),
+    totalGlobal:  _archivePendingData.totalGlobal  || 0,
+    totalBar:     _archivePendingData.totalBar      || 0,
+    totalAccueil: _archivePendingData.totalAccueil  || 0,
+    nbVentes:     _archivePendingData.nbVentes       || 0,
+    topProduits:  _archivePendingData.topProduits    || [],
+    heures:       _archivePendingData.heures         || {}
+  };
+
+  // Ajouter les ventes ligne par ligne (évite les tableaux)
+  var ventes = _archivePendingData.ventes || {};
+  Object.keys(ventes).forEach(function(k) { archive[k] = ventes[k]; });
+
   _archivePendingData = null;
+
+  toast("⏳ Archivage en cours…");
+
+  db.ref("archives").push(archive)
+    .then(function() {
+      return db.ref("historique").remove();
+    })
+    .then(function() {
+      historique = [];
+      renderStats();
+      renderHistorique();
+      toast("✅ Journée \"" + nom + "\" archivée !");
+      showPage("archives");
+    })
+    .catch(function(e) {
+      console.error("Erreur archivage:", e);
+      toast("❌ " + (e.message || "Erreur Firebase — vérifiez les règles"));
+    });
 }
 
 // ── Archiver journée (nouvelle version sans prompt) ──
@@ -2551,9 +2582,12 @@ function archiverJournee() {
     }
   });
 
-  var topProduits = Object.keys(prodMap).map(function(k) {
+  var topProduitsArr = Object.keys(prodMap).map(function(k) {
     return { nom: k, qte: prodMap[k].qte, total: prodMap[k].total };
   }).sort(function(a,b) { return b.total - a.total; }).slice(0, 10);
+  // Convertir en objet (Firebase n'aime pas les tableaux)
+  var topProduits = {};
+  topProduitsArr.forEach(function(p, i) { topProduits["p" + i] = p; });
 
   // Stocker les données en attente du nom
   _archivePendingData = {
@@ -2646,7 +2680,7 @@ function genererPDFArchive(id) {
     y += 5;
 
     var medals = ["1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "10."];
-    (a.topProduits || []).forEach(function(p, i) {
+    Object.values(a.topProduits || {}).forEach(function(p, i) {
       if (i % 2 === 0) doc.setFillColor(248, 249, 252);
       else             doc.setFillColor(255, 255, 255);
       doc.rect(margin, y, pw - margin*2, 8, "F");
@@ -2763,7 +2797,7 @@ function ouvrirArchiveDetail(id) {
     document.getElementById("archive-detail-titre").textContent = a.nom;
 
     var medals = ["🥇","🥈","🥉","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"];
-    var topHtml = (a.topProduits||[]).map(function(p,i) {
+    var topHtml = Object.values(a.topProduits||{}).map(function(p,i) {
       return "<div class='cloture-ligne'>" +
         "<span>" + medals[i] + " " + p.nom + " <span style='color:#bdc3c7;font-size:.78rem'>×" + p.qte + "</span></span>" +
         "<span class='cloture-ligne-val'>" + fmt(p.total) + "</span></div>";
@@ -2836,7 +2870,7 @@ function partagerArchive(id) {
     ];
     if (a.topProduits && a.topProduits.length) {
       lines.push("🏆 TOP PRODUITS");
-      a.topProduits.slice(0,5).forEach(function(p,i) {
+      Object.values(a.topProduits||{}).slice(0,5).forEach(function(p,i) {
         var m = ["🥇","🥈","🥉","4️⃣","5️⃣"][i];
         lines.push(m + " " + p.nom + " ×" + p.qte + " → " + fmt(p.total));
       });
