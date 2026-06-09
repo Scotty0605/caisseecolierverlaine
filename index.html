@@ -959,7 +959,7 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
     <div class="m-msg"   id="mc-msg">Êtes-vous sûr ?</div>
     <div class="m-btns">
       <button class="m-btn m-cancel" onclick="fermerModalConfirm()">❌ Annuler</button>
-      <button class="m-btn m-ok"     id="mc-ok">✅ Confirmer</button>
+      <button class="m-btn m-ok"     id="mc-ok" onclick="executerConfirm()">✅ Confirmer</button>
     </div>
   </div>
 </div>
@@ -1322,8 +1322,16 @@ function ouvrirConfirm(icon, titre, msg, cb) {
   document.getElementById("mc-icon").textContent  = icon;
   document.getElementById("mc-title").textContent = titre;
   document.getElementById("mc-msg").textContent   = msg;
-  document.getElementById("mc-ok").onclick = function() { fermerModalConfirm(); cb(); };
+  _confirmCallback = cb;
   document.getElementById("modal-confirm").classList.add("open");
+}
+function executerConfirm() {
+  fermerModalConfirm();
+  if (_confirmCallback) {
+    var cb = _confirmCallback;
+    _confirmCallback = null;
+    cb();
+  }
 }
 function fermerModalConfirm() { document.getElementById("modal-confirm").classList.remove("open"); }
 document.getElementById("modal-confirm").addEventListener("click", function(e) { if (e.target === this) fermerModalConfirm(); });
@@ -1905,18 +1913,26 @@ function demanderResetStats() {
   ouvrirConfirm("🗑️", "Remettre à zéro ?",
     "L'historique et les stats seront effacés. Les archives sont conservées.",
     function() {
-      toast("⏳ Remise à zéro…");
-      // On efface UNIQUEMENT historique — jamais archives ni stock
+      // Diagnostic : afficher l'UID réel
+      var uid = currentUser ? currentUser.uid : "NON CONNECTÉ";
+      console.log("UID connecté:", uid);
+      console.log("ADMIN_UID:", ADMIN_UID);
+      console.log("Est admin:", uid === ADMIN_UID);
+      toast("⏳ UID: " + uid.substring(0,8) + "…");
+
+      // Tester l'écriture directement
       db.ref("historique").remove()
         .then(function() {
           historique = [];
           renderStats();
           renderHistorique();
-          toast("✅ Stats remises à zéro — archives conservées !");
+          toast("✅ Stats remises à zéro !");
         })
         .catch(function(e) {
-          toast("❌ Erreur : " + (e.message || "vérifiez les règles Firebase"));
-          console.error("Reset erreur:", e);
+          // Afficher l'UID dans le message d'erreur pour diagnostic
+          var msg = e.message || e.code || "erreur inconnue";
+          toast("❌ " + msg + " | UID: " + uid.substring(0,12));
+          console.error("Reset erreur complète:", e);
         });
     }
   );
