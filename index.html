@@ -1902,13 +1902,24 @@ function renderStats() {
 }
 
 function demanderResetStats() {
-  ouvrirConfirm("🗑️", "Remettre à zéro ?", "Toutes les stats et l'historique seront effacés.", function() {
-    db.ref("historique").remove();
-    historique = [];
-    renderStats();
-    renderHistorique();
-    toast("🗑️ Stats remises à zéro");
-  });
+  ouvrirConfirm("🗑️", "Remettre à zéro ?",
+    "L'historique et les stats seront effacés. Les archives sont conservées.",
+    function() {
+      toast("⏳ Remise à zéro…");
+      // On efface UNIQUEMENT historique — jamais archives ni stock
+      db.ref("historique").remove()
+        .then(function() {
+          historique = [];
+          renderStats();
+          renderHistorique();
+          toast("✅ Stats remises à zéro — archives conservées !");
+        })
+        .catch(function(e) {
+          toast("❌ Erreur : " + (e.message || "vérifiez les règles Firebase"));
+          console.error("Reset erreur:", e);
+        });
+    }
+  );
 }
 
 // ── Historique ──
@@ -1947,13 +1958,23 @@ function renderHistorique() {
 }
 
 function demanderEffacerHistorique() {
-  ouvrirConfirm("🗑️", "Effacer l'historique ?", "Toutes les ventes seront supprimées.", function() {
-    db.ref("historique").remove();
-    historique = [];
-    renderHistorique();
-    renderStats();
-    toast("🗑️ Historique effacé");
-  });
+  ouvrirConfirm("🗑️", "Effacer l'historique ?",
+    "Toutes les ventes seront supprimées. Les archives sont conservées.",
+    function() {
+      toast("⏳ Suppression…");
+      db.ref("historique").remove()
+        .then(function() {
+          historique = [];
+          renderHistorique();
+          renderStats();
+          toast("✅ Historique effacé — archives conservées !");
+        })
+        .catch(function(e) {
+          toast("❌ Erreur : " + (e.message || "vérifiez les règles Firebase"));
+          console.error("Effacer historique erreur:", e);
+        });
+    }
+  );
 }
 
 
