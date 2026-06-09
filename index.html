@@ -436,6 +436,40 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
 }
 .archive-detail-body { padding: 16px; max-width: 480px; margin: 0 auto; width: 100%; }
 
+
+/* ── MODALE NOM JOURNÉE ── */
+.modal-nom-ov {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 800; display: flex; align-items: center; justify-content: center;
+  padding: 20px; opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.modal-nom-ov.open { opacity: 1; pointer-events: all; }
+.modal-nom-box {
+  background: white; border-radius: 20px; padding: 28px 20px;
+  width: 100%; max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.3);
+}
+.modal-nom-titre { font-size: 1.1rem; font-weight: 900; color: var(--texte); text-align: center; margin-bottom: 6px; }
+.modal-nom-sub   { font-size: .83rem; color: #95a5a6; text-align: center; margin-bottom: 18px; }
+.modal-nom-input {
+  width: 100%; padding: 14px 16px; border: 2px solid #ecf0f1;
+  border-radius: 12px; font-family: "Nunito",sans-serif; font-size: 1rem;
+  color: var(--texte); box-sizing: border-box; margin-bottom: 14px;
+  transition: border-color .2s;
+}
+.modal-nom-input:focus { outline: none; border-color: var(--bleu); }
+.modal-nom-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-nom-annuler {
+  padding: 13px; background: #ecf0f1; color: #7f8c8d;
+  border: none; border-radius: 12px; font-family: "Nunito",sans-serif;
+  font-size: .95rem; font-weight: 800; cursor: pointer;
+}
+.btn-nom-valider {
+  padding: 13px; background: linear-gradient(135deg, #8e44ad, #9b59b6);
+  color: white; border: none; border-radius: 12px;
+  font-family: "Nunito",sans-serif; font-size: .95rem; font-weight: 800; cursor: pointer;
+}
+
 /* BOUTON AIDE FLOTTANT */
 .btn-aide-flottant {
   position: absolute;
@@ -562,6 +596,7 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -1092,7 +1127,7 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
     </div>
 
     <button class="btn-archiver" onclick="archiverJournee()">🗂️ Archiver cette journée</button>
-    <button class="btn-cloture-print" onclick="imprimerCloture()">🖨️ Imprimer / Partager</button>
+    <button class="btn-cloture-print" onclick="imprimerCloture()">📤 Partager le résumé</button>
     <button class="btn-cloture-close" onclick="fermerCloture()">✕ Fermer</button>
   </div>
 </div>
@@ -1106,6 +1141,22 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
     <button class="btn-fermer-archive" onclick="fermerArchiveDetail()">✕</button>
   </div>
   <div class="archive-detail-body" id="archive-detail-body"></div>
+</div>
+
+
+<!-- MODALE NOM JOURNÉE -->
+<div class="modal-nom-ov" id="modal-nom-journee">
+  <div class="modal-nom-box">
+    <div style="text-align:center;font-size:2rem;margin-bottom:8px">🗂️</div>
+    <div class="modal-nom-titre">Archiver la journée</div>
+    <div class="modal-nom-sub">Donnez un nom à cette journée pour la retrouver facilement</div>
+    <input class="modal-nom-input" id="input-nom-journee" type="text"
+      placeholder="Ex : Soirée Gala 2026, Kermesse…" maxlength="60">
+    <div class="modal-nom-btns">
+      <button class="btn-nom-annuler" onclick="fermerModalNom()">Annuler</button>
+      <button class="btn-nom-valider" onclick="validerNomJournee()">🗂️ Archiver</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -2435,69 +2486,228 @@ function imprimerCloture() {
 // ── ARCHIVES JOURNÉES ──
 // ══════════════════════════════════════════
 
+// ── Modale saisie nom journée ──
+var _archivePendingData = null;
+
+function ouvrirModalNom() {
+  document.getElementById("input-nom-journee").value = "";
+  document.getElementById("modal-nom-journee").classList.add("open");
+  setTimeout(function() { document.getElementById("input-nom-journee").focus(); }, 300);
+}
+function fermerModalNom() {
+  document.getElementById("modal-nom-journee").classList.remove("open");
+  _archivePendingData = null;
+}
+document.addEventListener("keydown", function(e) {
+  if (e.key === "Enter" && document.getElementById("modal-nom-journee").classList.contains("open")) {
+    validerNomJournee();
+  }
+});
+
+function validerNomJournee() {
+  var nom = document.getElementById("input-nom-journee").value.trim();
+  if (!nom) {
+    document.getElementById("input-nom-journee").style.borderColor = "#e74c3c";
+    setTimeout(function() { document.getElementById("input-nom-journee").style.borderColor = ""; }, 1500);
+    return;
+  }
+  fermerModalNom();
+  if (!_archivePendingData) return;
+  _archivePendingData.nom  = nom;
+  _archivePendingData.date = new Date().toLocaleDateString("fr-FR");
+  _archivePendingData.ts   = Date.now();
+
+  db.ref("archives").push(_archivePendingData).then(function() {
+    db.ref("historique").remove();
+    toast("✅ Journée \"" + nom + "\" archivée !");
+    showPage("archives");
+  }).catch(function(e) {
+    toast("❌ Erreur Firebase : " + e.message);
+  });
+  _archivePendingData = null;
+}
+
+// ── Archiver journée (nouvelle version sans prompt) ──
 function archiverJournee() {
   if (!estAdmin()) { toast("⛔ Réservé à l'administrateur"); return; }
   if (!historique.length) { toast("⚠️ Aucune vente à archiver"); return; }
 
-  ouvrirConfirm(
-    "🗂️",
-    "Archiver la journée ?",
-    "Donnez un nom à cette journée (ex: Soirée Gala 2026) :",
-    function() {
-      // La confirmation ouvre un prompt pour le nom
-      var nom = prompt("Nom de la journée :");
-      if (!nom || !nom.trim()) { toast("⚠️ Nom annulé"); return; }
-      nom = nom.trim();
+  var totalGlobal = 0, totalBar = 0, totalAcc = 0;
+  var prodMap = {}, heureMap = {};
 
-      // Calculer le bilan
-      var totalGlobal = 0, totalBar = 0, totalAcc = 0;
-      var prodMap = {}, heureMap = {};
-
-      historique.forEach(function(v) {
-        totalGlobal += v.total || 0;
-        if (v.poste === "bar")     totalBar += v.total || 0;
-        if (v.poste === "accueil") totalAcc += v.total || 0;
-        (v.items || []).forEach(function(item) {
-          var k = item.emoji + " " + item.nom;
-          if (!prodMap[k]) prodMap[k] = { qte: 0, total: 0 };
-          prodMap[k].qte   += item.qte || 1;
-          prodMap[k].total += (item.prix || 0) * (item.qte || 1);
-        });
-        if (v.heure) {
-          var h = v.heure.split(":")[0] + "h";
-          heureMap[h] = (heureMap[h] || 0) + (v.total || 0);
-        }
-      });
-
-      var topProduits = Object.keys(prodMap).map(function(k) {
-        return { nom: k, qte: prodMap[k].qte, total: prodMap[k].total };
-      }).sort(function(a,b) { return b.total - a.total; }).slice(0,10);
-
-      var archive = {
-        nom:          nom,
-        date:         new Date().toLocaleDateString("fr-FR"),
-        ts:           Date.now(),
-        totalGlobal:  Math.round(totalGlobal * 100) / 100,
-        totalBar:     Math.round(totalBar    * 100) / 100,
-        totalAccueil: Math.round(totalAcc    * 100) / 100,
-        nbVentes:     historique.length,
-        topProduits:  topProduits,
-        heures:       heureMap,
-        ventes:       historique
-      };
-
-      // Sauvegarder dans Firebase
-      db.ref("archives").push(archive).then(function() {
-        // Vider l'historique après archivage
-        db.ref("historique").remove();
-        toast("✅ Journée \"" + nom + "\" archivée !");
-        showPage("archives");
-      }).catch(function(e) {
-        toast("❌ Erreur : " + e.message);
-      });
+  historique.forEach(function(v) {
+    totalGlobal += v.total || 0;
+    if (v.poste === "bar")     totalBar += v.total || 0;
+    if (v.poste === "accueil") totalAcc += v.total || 0;
+    (v.items || []).forEach(function(item) {
+      var k = item.emoji + " " + item.nom;
+      if (!prodMap[k]) prodMap[k] = { qte: 0, total: 0 };
+      prodMap[k].qte   += item.qte || 1;
+      prodMap[k].total += (item.prix || 0) * (item.qte || 1);
+    });
+    if (v.heure) {
+      var h = v.heure.split(":")[0] + "h";
+      heureMap[h] = (heureMap[h] || 0) + (v.total || 0);
     }
-  );
+  });
+
+  var topProduits = Object.keys(prodMap).map(function(k) {
+    return { nom: k, qte: prodMap[k].qte, total: prodMap[k].total };
+  }).sort(function(a,b) { return b.total - a.total; }).slice(0, 10);
+
+  // Stocker les données en attente du nom
+  _archivePendingData = {
+    totalGlobal:  Math.round(totalGlobal * 100) / 100,
+    totalBar:     Math.round(totalBar    * 100) / 100,
+    totalAccueil: Math.round(totalAcc    * 100) / 100,
+    nbVentes:     historique.length,
+    topProduits:  topProduits,
+    heures:       heureMap,
+    ventes:       historique.slice()
+  };
+
+  ouvrirModalNom();
 }
+
+// ── Générer PDF d'une archive ──
+function genererPDFArchive(id) {
+  db.ref("archives/" + id).once("value", function(snap) {
+    var a = snap.val();
+    if (!a) { toast("❌ Archive introuvable"); return; }
+
+    var doc = new window.jspdf.jsPDF({ unit: "mm", format: "a4" });
+    var pw = 210; // largeur page A4
+    var margin = 18;
+    var y = 0;
+
+    // ── En-tête violet ──
+    doc.setFillColor(142, 68, 173);
+    doc.rect(0, 0, pw, 42, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Les Ecoliers Verlaine", pw / 2, 14, { align: "center" });
+    doc.setFontSize(13);
+    doc.text("Bilan : " + (a.nom || ""), pw / 2, 23, { align: "center" });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text(a.date || "", pw / 2, 31, { align: "center" });
+    doc.text((a.nbVentes || 0) + " ventes enregistrees", pw / 2, 37, { align: "center" });
+
+    y = 52;
+
+    // ── Total global ──
+    doc.setFillColor(39, 174, 96);
+    doc.roundedRect(margin, y, pw - margin*2, 22, 4, 4, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text(fmt(a.totalGlobal || 0), pw / 2, y + 10, { align: "center" });
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.text("TOTAL DE LA JOURNEE", pw / 2, y + 18, { align: "center" });
+    y += 30;
+
+    // ── Par poste ──
+    doc.setFillColor(245, 246, 250);
+    doc.roundedRect(margin, y, (pw - margin*2) / 2 - 4, 20, 3, 3, "F");
+    doc.setFillColor(245, 246, 250);
+    doc.roundedRect(margin + (pw - margin*2)/2 + 4, y, (pw - margin*2)/2 - 4, 20, 3, 3, "F");
+
+    doc.setTextColor(52, 73, 94);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Bar", margin + (pw - margin*2)/4, y + 7, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(41, 128, 185);
+    doc.text(fmt(a.totalBar || 0), margin + (pw - margin*2)/4, y + 15, { align: "center" });
+
+    doc.setTextColor(52, 73, 94);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Accueil", margin + (pw - margin*2)*3/4 + 4, y + 7, { align: "center" });
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.setTextColor(41, 128, 185);
+    doc.text(fmt(a.totalAccueil || 0), margin + (pw - margin*2)*3/4 + 4, y + 15, { align: "center" });
+    y += 28;
+
+    // ── Top produits ──
+    doc.setTextColor(149, 165, 166);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.text("TOP PRODUITS VENDUS", margin, y);
+    y += 5;
+
+    var medals = ["1.", "2.", "3.", "4.", "5.", "6.", "7.", "8.", "9.", "10."];
+    (a.topProduits || []).forEach(function(p, i) {
+      if (i % 2 === 0) doc.setFillColor(248, 249, 252);
+      else             doc.setFillColor(255, 255, 255);
+      doc.rect(margin, y, pw - margin*2, 8, "F");
+
+      doc.setTextColor(52, 73, 94);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.text(medals[i], margin + 2, y + 5.5);
+
+      // Nom sans emoji (jsPDF gère mal les emoji)
+      var nomSans = p.nom.replace(/[\u{1F300}-\u{1FFFF}]/gu, "").trim();
+      doc.setFont("helvetica", "normal");
+      doc.text(nomSans + "  x" + p.qte, margin + 10, y + 5.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(41, 128, 185);
+      doc.text(fmt(p.total), pw - margin, y + 5.5, { align: "right" });
+      y += 8;
+    });
+    y += 6;
+
+    // ── Ventes par heure ──
+    if (a.heures && Object.keys(a.heures).length) {
+      doc.setTextColor(149, 165, 166);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text("VENTES PAR HEURE", margin, y);
+      y += 5;
+
+      var heures = Object.keys(a.heures).sort();
+      var maxH = Math.max.apply(null, heures.map(function(h){return a.heures[h];}));
+      var barW = pw - margin*2 - 30;
+
+      heures.forEach(function(h) {
+        var pct = a.heures[h] / maxH;
+        doc.setFillColor(236, 240, 241);
+        doc.roundedRect(margin + 16, y + 1, barW, 6, 2, 2, "F");
+        doc.setFillColor(41, 128, 185);
+        doc.roundedRect(margin + 16, y + 1, Math.max(4, barW * pct), 6, 2, 2, "F");
+        doc.setTextColor(52, 73, 94);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.text(h, margin, y + 6.5);
+        doc.setTextColor(41, 128, 185);
+        doc.text(fmt(a.heures[h]), pw - margin, y + 6.5, { align: "right" });
+        y += 10;
+      });
+      y += 4;
+    }
+
+    // ── Pied de page ──
+    doc.setDrawColor(236, 240, 241);
+    doc.line(margin, y, pw - margin, y);
+    y += 6;
+    doc.setTextColor(189, 195, 199);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.text("Genere par Ma Caisse - Les Ecoliers Verlaine  |  " + new Date().toLocaleString("fr-FR"), pw/2, y, { align: "center" });
+
+    // ── Enregistrer ──
+    var filename = "bilan-" + (a.nom || "journee").replace(/[^a-z0-9]/gi, "-").toLowerCase() + ".pdf";
+    doc.save(filename);
+    toast("✅ PDF telechargé !");
+  });
+}
+
 
 function renderArchives() {
   var cont = document.getElementById("archives-content");
@@ -2584,7 +2794,7 @@ function ouvrirArchiveDetail(id) {
       "</div>" +
       "<div class='cloture-bloc'><div class='cloture-bloc-titre'>🏆 Top produits</div>" + topHtml + "</div>" +
       "<div class='cloture-bloc'><div class='cloture-bloc-titre'>🕐 Par heure</div>" + heureHtml + "</div>" +
-      "<button onclick='partagerArchive(\"" + id + "\")' style='width:100%;padding:15px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;border:none;border-radius:14px;font-family:Nunito,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-top:4px'>🖨️ Partager ce bilan</button>" +
+      "<button onclick='genererPDFArchive(\"" + id + "\")' style='width:100%;padding:15px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;border:none;border-radius:14px;font-family:Nunito,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-top:4px'>📄 Télécharger le PDF</button>" +
       deleteBtn;
 
     document.getElementById("archive-detail-ov").classList.add("open");
