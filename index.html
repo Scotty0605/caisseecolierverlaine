@@ -377,6 +377,65 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
 }
 .btn-cloture-print:active, .btn-cloture-close:active { transform: scale(0.97); }
 
+
+/* ── ARCHIVES ── */
+.archive-card {
+  background: white; border-radius: 16px;
+  padding: 16px; margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+  cursor: pointer; transition: transform .15s, box-shadow .15s;
+}
+.archive-card:active { transform: scale(0.98); }
+.archive-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.archive-card-nom {
+  font-weight: 900; font-size: 1rem; color: var(--texte);
+}
+.archive-card-date {
+  font-size: .75rem; color: #95a5a6;
+}
+.archive-card-total {
+  font-family: "Courier Prime", monospace;
+  font-size: 1.4rem; font-weight: 900; color: var(--vert2);
+}
+.archive-card-sub {
+  display: flex; gap: 12px; margin-top: 6px;
+}
+.archive-card-sub span {
+  font-size: .78rem; color: #7f8c8d;
+  background: #f4f6f8; border-radius: 8px; padding: 3px 8px;
+}
+.btn-archiver {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, #8e44ad, #9b59b6);
+  color: white; border: none; border-radius: 14px;
+  font-family: "Nunito",sans-serif; font-size: 1rem;
+  font-weight: 800; cursor: pointer; margin-bottom: 10px;
+}
+.btn-archiver:active { transform: scale(0.97); }
+.archive-detail-ov {
+  position: fixed; inset: 0; background: var(--fond);
+  z-index: 650; display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+  overflow-y: auto;
+}
+.archive-detail-ov.open { opacity: 1; pointer-events: all; }
+.archive-detail-header {
+  background: linear-gradient(135deg, #8e44ad, #9b59b6);
+  color: white; padding: 16px; display: flex;
+  align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 10;
+}
+.archive-detail-header h2 { flex: 1; font-size: 1.05rem; font-weight: 900; }
+.btn-fermer-archive {
+  background: rgba(255,255,255,.2); border: none;
+  border-radius: 50%; width: 34px; height: 34px;
+  color: white; font-size: 1rem; cursor: pointer;
+}
+.archive-detail-body { padding: 16px; max-width: 480px; margin: 0 auto; width: 100%; }
+
 /* BOUTON AIDE FLOTTANT */
 .btn-aide-flottant {
   position: absolute;
@@ -559,6 +618,7 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
     <button class="tab-btn"        id="tab-stats"      onclick="showPage('stats')">📊 Stats</button>
     <button class="tab-btn"        id="tab-historique" onclick="showPage('historique')">📋 Historique</button>
     <button class="tab-btn"        id="tab-stock"      onclick="showPage('stock')">📦 Stock</button>
+    <button class="tab-btn"        id="tab-archives"   onclick="showPage('archives')">🗂️ Archives</button>
   </div>
   <div style="text-align:right;padding:2px 10px 6px"><button onclick="seDeconnecter()" style="background:none;border:none;color:rgba(255,255,255,.6);font-family:Nunito,sans-serif;font-size:.72rem;cursor:pointer;padding:4px 8px;border-radius:8px">🚪 Déconnexion</button></div>
 </header>
@@ -640,6 +700,18 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
   <br>
   <button class="btn-reset-stats" onclick="demanderEffacerHistorique()">🗑️ Effacer tout l'historique</button>
 </div>
+
+<!-- PAGE ARCHIVES -->
+<div class="page" id="page-archives">
+  <div class="page-header">
+    <h2>🗂️ Archives des journées</h2>
+    <p>Enregistrez et consultez le bilan de chaque journée.</p>
+  </div>
+  <div id="archives-content">
+    <div class="empty-box">Chargement…</div>
+  </div>
+</div>
+
 
 <!-- PAGE STOCK -->
 <div class="page" id="page-stock">
@@ -1019,9 +1091,21 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
       <div id="cloture-par-heure"></div>
     </div>
 
+    <button class="btn-archiver" onclick="archiverJournee()">🗂️ Archiver cette journée</button>
     <button class="btn-cloture-print" onclick="imprimerCloture()">🖨️ Imprimer / Partager</button>
     <button class="btn-cloture-close" onclick="fermerCloture()">✕ Fermer</button>
   </div>
+</div>
+
+
+<!-- MODAL DÉTAIL ARCHIVE -->
+<div class="archive-detail-ov" id="archive-detail-ov">
+  <div class="archive-detail-header">
+    <span style="font-size:1.4rem">🗂️</span>
+    <h2 id="archive-detail-titre">Journée</h2>
+    <button class="btn-fermer-archive" onclick="fermerArchiveDetail()">✕</button>
+  </div>
+  <div class="archive-detail-body" id="archive-detail-body"></div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1197,13 +1281,14 @@ document.getElementById("modal-confirm").addEventListener("click", function(e) {
 function showPage(id) {
   document.querySelectorAll(".page").forEach(function(p) { p.classList.remove("visible"); });
   document.getElementById("page-" + id).classList.add("visible");
-  ["caisse","produits","stats","historique","stock"].forEach(function(n) {
+  ["caisse","produits","stats","historique","stock","archives"].forEach(function(n) {
     document.getElementById("tab-" + n).classList.toggle("active", n === id);
   });
   if (id === "historique") renderHistorique();
   if (id === "stats")      renderStats();
   if (id === "aide")       { ouvrirAide(); return; }
   if (id === "stock")      renderStock();
+  if (id === "archives")   renderArchives();
   if (id === "produits")   { buildFormProduits(); renderManage(); }
 }
 
@@ -2030,6 +2115,8 @@ function initFirebaseListeners() {
     if (document.getElementById("page-stock").classList.contains("active")) renderStock();
   });
 
+  // 5. Pas de listener temps réel sur archives (chargé à la demande)
+
   // 3b. Initialiser les produits sans stock la première fois
   db.ref("stock_disabled").once("value", function(snap) {
     var existing = snap.val() || {};
@@ -2343,6 +2430,214 @@ function imprimerCloture() {
 }
 
 
+
+// ══════════════════════════════════════════
+// ── ARCHIVES JOURNÉES ──
+// ══════════════════════════════════════════
+
+function archiverJournee() {
+  if (!estAdmin()) { toast("⛔ Réservé à l'administrateur"); return; }
+  if (!historique.length) { toast("⚠️ Aucune vente à archiver"); return; }
+
+  ouvrirConfirm(
+    "🗂️",
+    "Archiver la journée ?",
+    "Donnez un nom à cette journée (ex: Soirée Gala 2026) :",
+    function() {
+      // La confirmation ouvre un prompt pour le nom
+      var nom = prompt("Nom de la journée :");
+      if (!nom || !nom.trim()) { toast("⚠️ Nom annulé"); return; }
+      nom = nom.trim();
+
+      // Calculer le bilan
+      var totalGlobal = 0, totalBar = 0, totalAcc = 0;
+      var prodMap = {}, heureMap = {};
+
+      historique.forEach(function(v) {
+        totalGlobal += v.total || 0;
+        if (v.poste === "bar")     totalBar += v.total || 0;
+        if (v.poste === "accueil") totalAcc += v.total || 0;
+        (v.items || []).forEach(function(item) {
+          var k = item.emoji + " " + item.nom;
+          if (!prodMap[k]) prodMap[k] = { qte: 0, total: 0 };
+          prodMap[k].qte   += item.qte || 1;
+          prodMap[k].total += (item.prix || 0) * (item.qte || 1);
+        });
+        if (v.heure) {
+          var h = v.heure.split(":")[0] + "h";
+          heureMap[h] = (heureMap[h] || 0) + (v.total || 0);
+        }
+      });
+
+      var topProduits = Object.keys(prodMap).map(function(k) {
+        return { nom: k, qte: prodMap[k].qte, total: prodMap[k].total };
+      }).sort(function(a,b) { return b.total - a.total; }).slice(0,10);
+
+      var archive = {
+        nom:          nom,
+        date:         new Date().toLocaleDateString("fr-FR"),
+        ts:           Date.now(),
+        totalGlobal:  Math.round(totalGlobal * 100) / 100,
+        totalBar:     Math.round(totalBar    * 100) / 100,
+        totalAccueil: Math.round(totalAcc    * 100) / 100,
+        nbVentes:     historique.length,
+        topProduits:  topProduits,
+        heures:       heureMap,
+        ventes:       historique
+      };
+
+      // Sauvegarder dans Firebase
+      db.ref("archives").push(archive).then(function() {
+        // Vider l'historique après archivage
+        db.ref("historique").remove();
+        toast("✅ Journée \"" + nom + "\" archivée !");
+        showPage("archives");
+      }).catch(function(e) {
+        toast("❌ Erreur : " + e.message);
+      });
+    }
+  );
+}
+
+function renderArchives() {
+  var cont = document.getElementById("archives-content");
+  if (!cont) return;
+  cont.innerHTML = "<div class='empty-box'>Chargement…</div>";
+
+  db.ref("archives").orderByChild("ts").once("value", function(snap) {
+    var raw = snap.val() || {};
+    var archives = Object.keys(raw).map(function(id) {
+      var a = raw[id]; a._id = id; return a;
+    }).sort(function(a,b) { return (b.ts||0) - (a.ts||0) }); // plus récent en premier
+
+    if (!archives.length) {
+      cont.innerHTML = "<div class='empty-box'>Aucune journée archivée</div>";
+      // Bouton archiver quand même
+      if (estAdmin()) cont.innerHTML += "<button class='btn-archiver' onclick='archiverJournee()'>🗂️ Archiver la journée en cours</button>";
+      return;
+    }
+
+    var html = "";
+    if (estAdmin()) {
+      html += "<button class='btn-archiver' onclick='archiverJournee()'>🗂️ Archiver la journée en cours</button>";
+    }
+
+    archives.forEach(function(a) {
+      html += "<div class='archive-card' onclick='ouvrirArchiveDetail(\"" + a._id + "\")'>" +
+        "<div class='archive-card-header'>" +
+          "<span class='archive-card-nom'>📅 " + a.nom + "</span>" +
+          "<span class='archive-card-date'>" + (a.date||"") + "</span>" +
+        "</div>" +
+        "<div class='archive-card-total'>" + fmt(a.totalGlobal||0) + "</div>" +
+        "<div class='archive-card-sub'>" +
+          "<span>🍺 " + fmt(a.totalBar||0) + "</span>" +
+          "<span>🏠 " + fmt(a.totalAccueil||0) + "</span>" +
+          "<span>🧾 " + (a.nbVentes||0) + " ventes</span>" +
+        "</div>" +
+      "</div>";
+    });
+
+    cont.innerHTML = html;
+  });
+}
+
+function ouvrirArchiveDetail(id) {
+  db.ref("archives/" + id).once("value", function(snap) {
+    var a = snap.val();
+    if (!a) return;
+
+    document.getElementById("archive-detail-titre").textContent = a.nom;
+
+    var medals = ["🥇","🥈","🥉","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"];
+    var topHtml = (a.topProduits||[]).map(function(p,i) {
+      return "<div class='cloture-ligne'>" +
+        "<span>" + medals[i] + " " + p.nom + " <span style='color:#bdc3c7;font-size:.78rem'>×" + p.qte + "</span></span>" +
+        "<span class='cloture-ligne-val'>" + fmt(p.total) + "</span></div>";
+    }).join("") || "<div style='color:#95a5a6;text-align:center;font-size:.85rem'>Aucune donnée</div>";
+
+    var heures = Object.keys(a.heures||{}).sort();
+    var maxH = heures.length ? Math.max.apply(null, heures.map(function(h){return a.heures[h];})) : 1;
+    var heureHtml = heures.map(function(h) {
+      var pct = Math.round((a.heures[h] / maxH) * 100);
+      return "<div style='margin-bottom:8px'>" +
+        "<div style='display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px'>" +
+          "<span style='font-weight:700'>" + h + "</span>" +
+          "<span style='font-family:Courier Prime,monospace;font-weight:700;color:var(--bleu)'>" + fmt(a.heures[h]) + "</span>" +
+        "</div>" +
+        "<div style='background:#ecf0f1;border-radius:6px;height:8px'>" +
+          "<div style='background:linear-gradient(90deg,var(--bleu),var(--vert2));height:8px;border-radius:6px;width:" + pct + "%'></div>" +
+        "</div></div>";
+    }).join("") || "<div style='color:#95a5a6;text-align:center;font-size:.85rem'>Aucune donnée</div>";
+
+    var deleteBtn = estAdmin()
+      ? "<button onclick='supprimerArchive(\"" + id + "\")' style='width:100%;padding:13px;background:#fadbd8;color:#c0392b;border:none;border-radius:14px;font-family:Nunito,sans-serif;font-size:.9rem;font-weight:800;cursor:pointer;margin-top:8px'>🗑️ Supprimer cette archive</button>"
+      : "";
+
+    document.getElementById("archive-detail-body").innerHTML =
+      "<div style='text-align:center;margin-bottom:20px'>" +
+        "<div style='font-size:2rem;font-weight:900;color:var(--vert2);font-family:Courier Prime,monospace'>" + fmt(a.totalGlobal||0) + "</div>" +
+        "<div style='font-size:.82rem;color:#95a5a6'>" + (a.nbVentes||0) + " ventes · " + (a.date||"") + "</div>" +
+      "</div>" +
+      "<div class='cloture-bloc'><div class='cloture-bloc-titre'>Par poste</div>" +
+        "<div class='cloture-ligne'><span>🍺 Bar</span><span class='cloture-ligne-val'>" + fmt(a.totalBar||0) + "</span></div>" +
+        "<div class='cloture-ligne'><span>🏠 Accueil</span><span class='cloture-ligne-val'>" + fmt(a.totalAccueil||0) + "</span></div>" +
+      "</div>" +
+      "<div class='cloture-bloc'><div class='cloture-bloc-titre'>🏆 Top produits</div>" + topHtml + "</div>" +
+      "<div class='cloture-bloc'><div class='cloture-bloc-titre'>🕐 Par heure</div>" + heureHtml + "</div>" +
+      "<button onclick='partagerArchive(\"" + id + "\")' style='width:100%;padding:15px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;border:none;border-radius:14px;font-family:Nunito,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-top:4px'>🖨️ Partager ce bilan</button>" +
+      deleteBtn;
+
+    document.getElementById("archive-detail-ov").classList.add("open");
+  });
+}
+
+function fermerArchiveDetail() {
+  document.getElementById("archive-detail-ov").classList.remove("open");
+}
+
+function supprimerArchive(id) {
+  ouvrirConfirm("🗑️", "Supprimer cette archive ?", "Cette action est irréversible.", function() {
+    db.ref("archives/" + id).remove().then(function() {
+      fermerArchiveDetail();
+      renderArchives();
+      toast("🗑️ Archive supprimée");
+    });
+  });
+}
+
+function partagerArchive(id) {
+  db.ref("archives/" + id).once("value", function(snap) {
+    var a = snap.val();
+    if (!a) return;
+    var lines = [
+      "📋 BILAN — " + a.nom,
+      a.date || "",
+      "═══════════════════════════════",
+      "💰 TOTAL : " + fmt(a.totalGlobal||0),
+      (a.nbVentes||0) + " ventes enregistrées",
+      "",
+      "🍺 Bar     : " + fmt(a.totalBar||0),
+      "🏠 Accueil : " + fmt(a.totalAccueil||0),
+      "═══════════════════════════════",
+    ];
+    if (a.topProduits && a.topProduits.length) {
+      lines.push("🏆 TOP PRODUITS");
+      a.topProduits.slice(0,5).forEach(function(p,i) {
+        var m = ["🥇","🥈","🥉","4️⃣","5️⃣"][i];
+        lines.push(m + " " + p.nom + " ×" + p.qte + " → " + fmt(p.total));
+      });
+    }
+    var text = lines.join("\n");
+    if (navigator.share) {
+      navigator.share({ title: "Bilan " + a.nom, text: text }).catch(function(){});
+    } else {
+      navigator.clipboard.writeText(text).then(function() {
+        toast("✅ Bilan copié dans le presse-papier !");
+      });
+    }
+  });
+}
+
 // ── AUTHENTIFICATION FIREBASE ──
 // ══════════════════════════════════════════
 
@@ -2415,6 +2710,8 @@ auth.onAuthStateChanged(function(user) {
     // Masquer onglet Stock pour les bénévoles
     var tabStock = document.getElementById("tab-stock");
     if (tabStock) tabStock.style.display = (user.uid === ADMIN_UID) ? "" : "none";
+    var tabArchives = document.getElementById("tab-archives");
+    if (tabArchives) tabArchives.style.display = (user.uid === ADMIN_UID) ? "" : "none";
 
     buildFormProduits();
     initFirebaseListeners();
