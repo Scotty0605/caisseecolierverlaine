@@ -1153,7 +1153,7 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
     <input class="modal-nom-input" id="input-nom-journee" type="text"
       placeholder="Ex : Soirée Gala 2026, Kermesse…" maxlength="60">
     <div class="modal-nom-btns">
-      <button class="btn-nom-annuler" onclick="fermerModalNom()">Annuler</button>
+      <button class="btn-nom-annuler" onclick="fermerModalNom(true)">Annuler</button>
       <button class="btn-nom-valider" onclick="validerNomJournee()">🗂️ Archiver</button>
     </div>
   </div>
@@ -2494,9 +2494,9 @@ function ouvrirModalNom() {
   document.getElementById("modal-nom-journee").classList.add("open");
   setTimeout(function() { document.getElementById("input-nom-journee").focus(); }, 300);
 }
-function fermerModalNom() {
+function fermerModalNom(annuler) {
   document.getElementById("modal-nom-journee").classList.remove("open");
-  _archivePendingData = null;
+  if (annuler) _archivePendingData = null;  // null seulement si on annule vraiment
 }
 document.addEventListener("keydown", function(e) {
   if (e.key === "Enter" && document.getElementById("modal-nom-journee").classList.contains("open")) {
@@ -2563,7 +2563,11 @@ function archiverJournee() {
     nbVentes:     historique.length,
     topProduits:  topProduits,
     heures:       heureMap,
-    ventes:       historique.slice()
+    ventes: (function() {
+        var obj = {};
+        historique.forEach(function(v, i) { obj["v" + i] = v; });
+        return obj;
+      })()
   };
 
   ouvrirModalNom();
