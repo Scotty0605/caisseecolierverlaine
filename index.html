@@ -300,6 +300,83 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
   text-align: center; margin-top: 4px; padding: 2px 0;
 }
 
+
+/* ── BANNIÈRE HORS LIGNE ── */
+.offline-banner {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: #c0392b; color: white;
+  text-align: center; padding: 10px 16px;
+  font-weight: 800; font-size: .88rem;
+  z-index: 8000; transform: translateY(-100%);
+  transition: transform .3s;
+}
+.offline-banner.visible { transform: translateY(0); }
+
+/* ── MODAL CLÔTURE ── */
+.modal-cloture-ov {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 700; display: flex;
+  align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-cloture-ov.open { opacity: 1; pointer-events: all; }
+.modal-cloture-box {
+  background: var(--fond); border-radius: 24px 24px 0 0;
+  padding: 24px 20px 40px; width: 100%; max-width: 480px;
+  transform: translateY(60px); transition: transform .3s;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-cloture-ov.open .modal-cloture-box { transform: translateY(0); }
+.cloture-titre {
+  font-size: 1.2rem; font-weight: 900; color: var(--texte);
+  text-align: center; margin-bottom: 4px;
+}
+.cloture-sous { font-size: .82rem; color: #95a5a6; text-align: center; margin-bottom: 20px; }
+.cloture-bloc {
+  background: white; border-radius: 16px;
+  padding: 16px; margin-bottom: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,.06);
+}
+.cloture-bloc-titre {
+  font-size: .75rem; font-weight: 900; text-transform: uppercase;
+  letter-spacing: 1px; color: #95a5a6; margin-bottom: 10px;
+}
+.cloture-ligne {
+  display: flex; justify-content: space-between;
+  align-items: center; padding: 6px 0;
+  border-bottom: 1px solid #f5f5f5; font-size: .9rem;
+}
+.cloture-ligne:last-child { border-bottom: none; }
+.cloture-ligne-val {
+  font-family: "Courier Prime", monospace;
+  font-weight: 700; color: var(--bleu);
+}
+.cloture-total-big {
+  font-size: 2rem; font-weight: 900; color: var(--vert2);
+  text-align: center; margin: 8px 0 4px;
+  font-family: "Courier Prime", monospace;
+}
+.cloture-total-label {
+  font-size: .8rem; color: #95a5a6; text-align: center; margin-bottom: 16px;
+}
+.btn-cloture-print {
+  width: 100%; padding: 15px;
+  background: linear-gradient(135deg, #27ae60, #2ecc71);
+  color: white; border: none; border-radius: 14px;
+  font-family: "Nunito",sans-serif; font-size: 1rem;
+  font-weight: 800; cursor: pointer; margin-bottom: 10px;
+}
+.btn-cloture-close {
+  width: 100%; padding: 13px;
+  background: #ecf0f1; color: #7f8c8d;
+  border: none; border-radius: 14px;
+  font-family: "Nunito",sans-serif; font-size: .95rem;
+  font-weight: 800; cursor: pointer;
+}
+.btn-cloture-print:active, .btn-cloture-close:active { transform: scale(0.97); }
+
 /* BOUTON AIDE FLOTTANT */
 .btn-aide-flottant {
   position: absolute;
@@ -430,6 +507,10 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
 <body>
 
 <!-- ÉCRAN CHOIX POSTE -->
+
+<!-- BANNIÈRE HORS LIGNE -->
+<div class="offline-banner" id="offline-banner">📡 Pas de connexion internet — les ventes ne seront pas enregistrées !</div>
+
 <!-- ÉCRAN DE CONNEXION -->
 <div class="login-overlay" id="login-overlay">
   <div class="login-box">
@@ -899,6 +980,47 @@ main{padding:14px 12px;max-width:480px;margin:0 auto}
       </div>
     </div>
     <button class="btn-close-install" onclick="fermerInstall()">✅ C'est compris, merci !</button>
+  </div>
+</div>
+
+
+<!-- MODAL CLÔTURE -->
+<div class="modal-cloture-ov" id="modal-cloture">
+  <div class="modal-cloture-box">
+    <div class="cloture-titre">📋 Clôture de caisse</div>
+    <div class="cloture-sous" id="cloture-date"></div>
+
+    <!-- Total global -->
+    <div class="cloture-total-big" id="cloture-total-global">0,00 €</div>
+    <div class="cloture-total-label" id="cloture-nb-ventes"></div>
+
+    <!-- Par poste -->
+    <div class="cloture-bloc">
+      <div class="cloture-bloc-titre">Par poste</div>
+      <div class="cloture-ligne">
+        <span>🍺 Bar</span>
+        <span class="cloture-ligne-val" id="cloture-bar">0,00 €</span>
+      </div>
+      <div class="cloture-ligne">
+        <span>🏠 Accueil</span>
+        <span class="cloture-ligne-val" id="cloture-accueil">0,00 €</span>
+      </div>
+    </div>
+
+    <!-- Top produits -->
+    <div class="cloture-bloc">
+      <div class="cloture-bloc-titre">🏆 Top produits vendus</div>
+      <div id="cloture-top-produits"></div>
+    </div>
+
+    <!-- Tranches horaires -->
+    <div class="cloture-bloc">
+      <div class="cloture-bloc-titre">🕐 Ventes par heure</div>
+      <div id="cloture-par-heure"></div>
+    </div>
+
+    <button class="btn-cloture-print" onclick="imprimerCloture()">🖨️ Imprimer / Partager</button>
+    <button class="btn-cloture-close" onclick="fermerCloture()">✕ Fermer</button>
   </div>
 </div>
 
@@ -1639,7 +1761,8 @@ function renderStats() {
         "<tbody>" + rows + "</tbody>" +
       "</table>" +
     "</div>" +
-    "<button class='btn-reset-stats' onclick='demanderResetStats()'>🗑️ Remettre les stats à zéro</button>";
+    (estAdmin() ? "<button onclick='ouvrirCloture()' style='width:100%;padding:14px;background:linear-gradient(135deg,#27ae60,#2ecc71);color:white;border:none;border-radius:14px;font-family:Nunito,sans-serif;font-size:1rem;font-weight:800;cursor:pointer;margin-bottom:10px'>📋 Clôture de caisse</button>" : "") +
+    (estAdmin() ? "<button class='btn-reset-stats' onclick='demanderResetStats()'>🗑️ Remettre les stats à zéro</button>" : "");
 }
 
 function demanderResetStats() {
@@ -2075,6 +2198,151 @@ function setStock(key) {
 
 
 // ══════════════════════════════════════════
+
+// ══════════════════════════════════════════
+// ── GESTION RÉSEAU ──
+// ══════════════════════════════════════════
+function majEtatReseau() {
+  var banner = document.getElementById("offline-banner");
+  if (!banner) return;
+  if (navigator.onLine) {
+    banner.classList.remove("visible");
+  } else {
+    banner.classList.add("visible");
+  }
+}
+window.addEventListener("online",  majEtatReseau);
+window.addEventListener("offline", majEtatReseau);
+
+// Écouter aussi Firebase lui-même (plus fiable que navigator.onLine)
+var connRef = firebase.database().ref(".info/connected");
+connRef.on("value", function(snap) {
+  var banner = document.getElementById("offline-banner");
+  if (!banner) return;
+  if (snap.val() === true) {
+    banner.classList.remove("visible");
+  } else {
+    banner.classList.add("visible");
+  }
+});
+
+// ══════════════════════════════════════════
+// ── CLÔTURE DE CAISSE ──
+// ══════════════════════════════════════════
+function ouvrirCloture() {
+  // Date
+  var now = new Date();
+  document.getElementById("cloture-date").textContent =
+    "Soirée du " + now.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", year:"numeric" });
+
+  // Calculer depuis historique
+  var totalGlobal = 0, totalBar = 0, totalAcc = 0, nbVentes = 0;
+  var prodMap = {}; // nom → { qte, total }
+  var heureMap = {}; // "20h" → total
+
+  historique.forEach(function(v) {
+    totalGlobal += v.total || 0;
+    nbVentes++;
+    if (v.poste === "bar")     totalBar += v.total || 0;
+    if (v.poste === "accueil") totalAcc += v.total || 0;
+
+    // Par produit
+    (v.items || []).forEach(function(item) {
+      var key = item.emoji + " " + item.nom;
+      if (!prodMap[key]) prodMap[key] = { qte: 0, total: 0 };
+      prodMap[key].qte   += item.qte  || 1;
+      prodMap[key].total += (item.prix || 0) * (item.qte || 1);
+    });
+
+    // Par heure
+    if (v.heure) {
+      var h = v.heure.split(":")[0] + "h";
+      heureMap[h] = (heureMap[h] || 0) + (v.total || 0);
+    }
+  });
+
+  // Total global
+  document.getElementById("cloture-total-global").textContent = fmt(totalGlobal);
+  document.getElementById("cloture-nb-ventes").textContent =
+    nbVentes + " vente" + (nbVentes > 1 ? "s" : "") + " enregistrée" + (nbVentes > 1 ? "s" : "");
+  document.getElementById("cloture-bar").textContent     = fmt(totalBar);
+  document.getElementById("cloture-accueil").textContent = fmt(totalAcc);
+
+  // Top 5 produits
+  var prods = Object.keys(prodMap).map(function(k) {
+    return { nom: k, qte: prodMap[k].qte, total: prodMap[k].total };
+  }).sort(function(a, b) { return b.total - a.total; }).slice(0, 5);
+
+  var topEl = document.getElementById("cloture-top-produits");
+  if (!prods.length) {
+    topEl.innerHTML = "<div style='color:#95a5a6;font-size:.85rem;text-align:center'>Aucune vente</div>";
+  } else {
+    topEl.innerHTML = prods.map(function(p, i) {
+      var medals = ["🥇","🥈","🥉","4️⃣","5️⃣"];
+      return "<div class='cloture-ligne'>" +
+        "<span>" + medals[i] + " " + p.nom + " <span style='color:#bdc3c7;font-size:.78rem'>×" + p.qte + "</span></span>" +
+        "<span class='cloture-ligne-val'>" + fmt(p.total) + "</span></div>";
+    }).join("");
+  }
+
+  // Par heure
+  var heures = Object.keys(heureMap).sort();
+  var heureEl = document.getElementById("cloture-par-heure");
+  if (!heures.length) {
+    heureEl.innerHTML = "<div style='color:#95a5a6;font-size:.85rem;text-align:center'>Aucune donnée</div>";
+  } else {
+    var maxH = Math.max.apply(null, Object.values(heureMap));
+    heureEl.innerHTML = heures.map(function(h) {
+      var pct = Math.round((heureMap[h] / maxH) * 100);
+      return "<div style='margin-bottom:8px'>" +
+        "<div style='display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:3px'>" +
+          "<span style='font-weight:700'>" + h + "</span>" +
+          "<span style='font-family:Courier Prime,monospace;font-weight:700;color:var(--bleu)'>" + fmt(heureMap[h]) + "</span>" +
+        "</div>" +
+        "<div style='background:#ecf0f1;border-radius:6px;height:8px'>" +
+          "<div style='background:linear-gradient(90deg,var(--bleu),var(--vert2));height:8px;border-radius:6px;width:" + pct + "%'></div>" +
+        "</div></div>";
+    }).join("");
+  }
+
+  document.getElementById("modal-cloture").classList.add("open");
+}
+
+function fermerCloture() {
+  document.getElementById("modal-cloture").classList.remove("open");
+}
+
+function imprimerCloture() {
+  // Construire un texte résumé à partager
+  var now = new Date();
+  var lines = [
+    "📋 CLÔTURE DE CAISSE — Les Écoliers Verlaine",
+    now.toLocaleDateString("fr-FR", { weekday:"long", day:"numeric", month:"long", year:"numeric" }),
+    "═══════════════════════════════",
+    "💰 TOTAL : " + document.getElementById("cloture-total-global").textContent,
+    document.getElementById("cloture-nb-ventes").textContent,
+    "",
+    "🍺 Bar     : " + document.getElementById("cloture-bar").textContent,
+    "🏠 Accueil : " + document.getElementById("cloture-accueil").textContent,
+    "═══════════════════════════════",
+  ];
+
+  var text = lines.join("\n");
+
+  if (navigator.share) {
+    navigator.share({ title: "Clôture de caisse", text: text })
+      .catch(function() {});
+  } else {
+    // Fallback : copier dans le presse-papier
+    navigator.clipboard.writeText(text).then(function() {
+      toast("✅ Résumé copié dans le presse-papier !");
+    }).catch(function() {
+      toast("📋 " + text.substring(0, 80) + "…");
+    });
+  }
+}
+
+
 // ── AUTHENTIFICATION FIREBASE ──
 // ══════════════════════════════════════════
 
